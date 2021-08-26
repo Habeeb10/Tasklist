@@ -11,40 +11,23 @@ import {
 import { Tick, Back } from "../assets/svg";
 import { StatusBar } from "expo-status-bar";
 import { OpenAndClose } from "../components/CustomButton";
-const data = [
-  {
-    key: 1,
-    task: "Doctors Appointment",
-    day: "Feb 5th at 2:30 pm",
-    isReminding: true,
-  },
-  {
-    key: 2,
-    task: "Meeting at School",
-    day: "Feb 6th at 1:30 pm",
-    isReminding: false,
-  },
-  {
-    key: 3,
-    task: "Go to Market",
-    day: "Feb 7th at 5:30 pm",
-    isReminding: true,
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { RemoveTask, SaveTask } from "../store/actions/actions";
+
 const slope = { top: 10, bottom: 10, left: 10, right: 10 };
 export default function TodoList() {
   const [isAdding, setAdd] = useState(false);
   const [reminder, setReminder] = useState(false);
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
-  const [todos, setTodos] = useState(data);
+
+  const dispatch = useDispatch();
+
+  const { task } = useSelector((state) => state.countReducer);
+
   const _renderItem = ({ item }) => {
     return (
-      <TouchableOpacity
-        // onPress={() => remove(item.key)}
-        style={styles.itemCont}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.itemCont} activeOpacity={0.7}>
         {item.isReminding ? <View style={styles.setReminder} /> : null}
         <View style={styles.tasks}>
           <View style={{ width: 250 }}>
@@ -58,25 +41,25 @@ export default function TodoList() {
       </TouchableOpacity>
     );
   };
+
   const remove = (key) => {
-    const AllItem = todos;
-    const newItem = AllItem.filter((item) => item.key !== key);
-    setTodos(newItem);
+    return dispatch(RemoveTask(key));
   };
+
   const AddItem = () => {
-    const dataToAdd = {
-      key: todos.length + 1,
-      task: name,
-      day: date,
-      isReminding: reminder,
-    };
     if (!name || !date) {
       alert("Enter your details");
     } else {
-      setTodos((prev) => [...prev, dataToAdd]);
+      const dataToAdd = {
+        key: task.length + 1,
+        task: name,
+        day: date,
+        isReminding: reminder,
+      };
       setDate("");
       setName("");
       setReminder(false);
+      return dispatch(SaveTask(dataToAdd));
     }
   };
   return (
@@ -122,8 +105,8 @@ export default function TodoList() {
               </TouchableOpacity>
             </View>
           ) : null}
-          {todos.length > 0 ? (
-            <FlatList data={todos} renderItem={_renderItem} />
+          {task.length > 0 ? (
+            <FlatList data={task} renderItem={_renderItem} />
           ) : (
             <View>
               <Text style={{ fontSize: 17 }}>No Tasks to Show</Text>
